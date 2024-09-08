@@ -1,8 +1,11 @@
 package me.lukasabbe.bucketpickup.mixin;
 
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.FluidState;
@@ -24,8 +27,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PickUpMixin {
     @Shadow @Nullable public Entity cameraEntity;
     @Shadow @Nullable public ClientPlayerEntity player;
-    @Unique
-    public HitResult crosshairTargetFluid;
+    @Shadow @Nullable public ClientWorld world;
+    @Shadow @Nullable public ClientPlayerInteractionManager interactionManager;
+    @Unique public HitResult crosshairTargetFluid;
+
     @Inject(method = "tick", at= @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;updateCrosshairTarget(F)V",shift = At.Shift.AFTER))
     public void updateFluidCrosshair(CallbackInfo ci){
         if(cameraEntity == null) return;
@@ -34,26 +39,36 @@ public class PickUpMixin {
 
     @Inject(method = "doItemPick", at=@At("HEAD"), cancellable = true)
     public void pickBucket(CallbackInfo ci){
-        final MinecraftClient client = (MinecraftClient) (Object) this;
-        if(crosshairTargetFluid != null && crosshairTargetFluid.getType() != HitResult.Type.MISS && crosshairTargetFluid.getType() == HitResult.Type.BLOCK && client.player.isSneaking()){
-            BlockPos blockPos = ((BlockHitResult)this.crosshairTargetFluid).getBlockPos();
-            FluidState fluidState = client.world.getFluidState(blockPos);
-            if(fluidState != null && (fluidState.getBlockState().isOf(Blocks.WATER) || fluidState.getBlockState().isOf(Blocks.LAVA))){
-                PlayerInventory playerInventory = client.player.getInventory();
-                final ItemStack bucketItem = Items.BUCKET.getDefaultStack();
-                int i = playerInventory.getSlotWithStack(bucketItem);
-                if(client.player.getAbilities().creativeMode){
-                    playerInventory.addPickBlock(bucketItem);
-                    client.interactionManager.clickCreativeStack(client.player.getStackInHand(Hand.MAIN_HAND), 36 + playerInventory.selectedSlot);
-                }
-                else if(i!=-1){
-                    if (PlayerInventory.isValidHotbarIndex(i)) {
-                        playerInventory.selectedSlot = i;
-                    } else {
-                        client.interactionManager.pickFromInventory(i);
+        if(crosshairTargetFluid != null) {
+
+            final HitResult.Type type = crosshairTargetFluid.getType();
+            if (type != HitResult.Type.MISS && type == HitResult.Type.BLOCK && player.isSneaking()) {
+
+                BlockPos blockPos = ((BlockHitResult) this.crosshairTargetFluid).getBlockPos();
+                FluidState fluidState = world.getFluidState(blockPos);
+
+                if (fluidState != null) {
+
+                    final BlockState blockState = fluidState.getBlockState();
+                    if (blockState.isOf(Blocks.WATER) || blockState.isOf(Blocks.LAVA)) {
+
+                        PlayerInventory playerInventory = player.getInventory();
+                        final ItemStack bucketItem = Items.BUCKET.getDefaultStack();
+                        int i = playerInventory.getSlotWithStack(bucketItem);
+
+                        if (player.getAbilities().creativeMode) {
+                            playerInventory.addPickBlock(bucketItem);
+                            interactionManager.clickCreativeStack(player.getStackInHand(Hand.MAIN_HAND), 36 + playerInventory.selectedSlot);
+                        } else if (i != -1) {
+                            if (PlayerInventory.isValidHotbarIndex(i)) {
+                                playerInventory.selectedSlot = i;
+                            } else {
+                                interactionManager.pickFromInventory(i);
+                            }
+                        }
+                        ci.cancel();
                     }
                 }
-                ci.cancel();
             }
         }
     }
