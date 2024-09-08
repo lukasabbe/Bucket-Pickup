@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "bucketpickup",
+  "version": "${version}",
+  "name": "BucketPickup",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/bucketpickup/icon.png",
+  "environment": "client",
+  "entrypoints": {},
+  "mixins": [
+    "bucketpickup.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}"
+  }
+}

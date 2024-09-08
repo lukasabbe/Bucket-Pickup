@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.lukasabbe.bucketpickup.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "PickUpMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
