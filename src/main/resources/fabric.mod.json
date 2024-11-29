@@ -2,10 +2,12 @@
   "schemaVersion": 1,
   "id": "bucketpickup",
   "version": "${version}",
-  "name": "BucketPickup",
-  "description": "",
-  "authors": [],
-  "contact": {},
+  "name": "Bucket Pickup",
+  "description": "An mod that lets you pick a bucket from your inventory when you shift + pick block when looking at lava/water",
+  "authors": ["Lukasabbe"],
+  "contact": {
+    "sources": "https://github.com/lukasabbe/Bucket-Pickup"
+  },
   "license": "MIT",
   "icon": "assets/bucketpickup/icon.png",
   "environment": "client",
@@ -15,6 +17,6 @@
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
-    "minecraft": ">=1.21.2"
+    "minecraft": ">=1.21.4-rc.3"
   }
 }
