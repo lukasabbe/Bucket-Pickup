@@ -66,7 +66,7 @@ public abstract class PickUpMixin {
 
                         if (i != -1) {
                             if (PlayerInventory.isValidHotbarIndex(i)) {
-                                playerInventory.selectedSlot = i;
+                                playerInventory.setSelectedSlot(i);
                             } else {
                                 playerInventory.swapSlotWithHotbar(i);
                             }
