@@ -3,6 +3,7 @@ package me.lukasabbe.bucketpickup.mixin;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.world.ClientWorld;
@@ -11,6 +12,10 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
+import net.minecraft.network.packet.s2c.play.SetPlayerInventoryS2CPacket;
+import net.minecraft.server.command.GiveCommand;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -24,11 +29,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
-public class PickUpMixin {
+public abstract class PickUpMixin {
     @Shadow @Nullable public Entity cameraEntity;
     @Shadow @Nullable public ClientPlayerEntity player;
     @Shadow @Nullable public ClientWorld world;
     @Shadow @Nullable public ClientPlayerInteractionManager interactionManager;
+
+    @Shadow @Nullable public abstract ClientPlayNetworkHandler getNetworkHandler();
+
     @Unique public HitResult crosshairTargetFluid;
 
     @Inject(method = "tick", at= @At(value = "INVOKE", target = "Lnet/minecraft/client/render/GameRenderer;updateCrosshairTarget(F)V",shift = At.Shift.AFTER))
@@ -56,14 +64,11 @@ public class PickUpMixin {
                         final ItemStack bucketItem = Items.BUCKET.getDefaultStack();
                         int i = playerInventory.getSlotWithStack(bucketItem);
 
-                        if (player.getAbilities().creativeMode) {
-                            playerInventory.addPickBlock(bucketItem);
-                            interactionManager.clickCreativeStack(player.getStackInHand(Hand.MAIN_HAND), 36 + playerInventory.selectedSlot);
-                        } else if (i != -1) {
+                        if (i != -1) {
                             if (PlayerInventory.isValidHotbarIndex(i)) {
                                 playerInventory.selectedSlot = i;
                             } else {
-                                interactionManager.pickFromInventory(i);
+                                playerInventory.swapSlotWithHotbar(i);
                             }
                         }
                         ci.cancel();
