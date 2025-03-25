@@ -12,11 +12,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
-import net.minecraft.network.packet.s2c.play.SetPlayerInventoryS2CPacket;
-import net.minecraft.server.command.GiveCommand;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -66,7 +61,7 @@ public abstract class PickUpMixin {
 
                         if (i != -1) {
                             if (PlayerInventory.isValidHotbarIndex(i)) {
-                                playerInventory.selectedSlot = i;
+                                playerInventory.setSelectedSlot(i);
                             } else {
                                 playerInventory.swapSlotWithHotbar(i);
                             }
